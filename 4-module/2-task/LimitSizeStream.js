@@ -16,6 +16,7 @@ class LimitSizeStream extends stream.Transform {
     } else {
       this.size += chunk.length;
     }
+    console.error(this.size +'-' + this.limit+' +++');
 
     if (this.size > this.limit) {
       callback(new LimitExceededError());
