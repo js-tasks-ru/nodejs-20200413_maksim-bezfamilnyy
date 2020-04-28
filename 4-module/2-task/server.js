@@ -14,33 +14,39 @@ server.on('request', (req, res) => {
   switch (req.method) {
     case 'POST':
       console.error(filepath);
+      console.error(pathname);
 
       if (fs.existsSync(filepath)) {
-        console.error('Файл уже существует');
         res.statusCode = 409;
+        res.end();
       } else if (pathname.split('/').length > 1) {
         res.statusCode = 400;
+        res.end();
       } else {
-        const stream = new LimitSizeStream({limit: 1024 * 100});
+        const limitedSizeStream = new LimitSizeStream({limit: 1024 * 100});
         const writeStream = fs.createWriteStream(filepath);
-        req.pipe(stream).pipe(writeStream);
+        req.pipe(limitedSizeStream).pipe(writeStream);
 
-        stream.on('error', (error) => {
-          console.error(error.message);
+        limitedSizeStream.on('error', (error) => {
           if (error.code === 'LIMIT_EXCEEDED') {
             res.statusCode = 413;
           } else {
             res.statusCode = 500;
           }
+          fs.unlink(filepath, () => {});
+          res.end();
         });
-
-        //
-        // req.on('close', () => {
-        //   fs.unlink(filepath);
-        //   res.statusCode = 500;
-        // });
+        req.on('close', () => {
+          if (res.finished) return;
+          fs.unlink(filepath, () => {});
+          res.statusCode = 500;
+          res.end();
+        });
+        writeStream.on('close', () => {
+          res.statusCode = 201;
+          res.end();
+        });
       }
-      res.end();
       break;
 
     default:
