@@ -12,21 +12,23 @@ server.on('request', (req, res) => {
 
   if (pathname.includes('/') || pathname.includes('..')) {
     res.statusCode = 400;
-    res.end('Nested paths are not allowed');
+    res.end();
   } else if (!fs.existsSync(filepath)) {
     res.statusCode = 404;
     res.end();
-  }
-  switch (req.method) {
-    case 'DELETE':
-      fs.unlink(filepath, () => {});
-      res.statusCode = 200;
-      res.end();
-      break;
+  } else {
+    switch (req.method) {
+      case 'DELETE':
+        fs.unlink(filepath, () => {
+        });
+        res.statusCode = 200;
+        res.end();
+        break;
 
-    default:
-      res.statusCode = 501;
-      res.end('Not implemented');
+      default:
+        res.statusCode = 501;
+        res.end('Not implemented');
+    }
   }
 });
 
