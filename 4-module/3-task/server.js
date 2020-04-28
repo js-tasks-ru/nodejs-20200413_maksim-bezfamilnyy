@@ -13,11 +13,9 @@ server.on('request', (req, res) => {
   if (pathname.includes('/') || pathname.includes('..')) {
     res.statusCode = 400;
     res.end('Nested paths are not allowed');
-    return;
   } else if (!fs.existsSync(filepath)) {
     res.statusCode = 404;
     res.end();
-    return;
   }
   switch (req.method) {
     case 'DELETE':
